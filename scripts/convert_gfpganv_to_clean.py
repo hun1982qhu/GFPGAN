@@ -103,7 +103,7 @@ def modify_checkpoint(checkpoint_bilinear, checkpoint_clean):
                     checkpoint_clean[crt_k] *= 2**0.5
         elif 'toRGB' in ori_k:
             crt_k = ori_k
-            if 'weight' in ori_k:
+            if 'weight' in crt_k:
                 c_out, c_in, k1, k2 = ori_v.size()
                 scale = 1 / math.sqrt(c_in * k1 * k2)
                 checkpoint_clean[crt_k] = ori_v * scale
@@ -111,7 +111,7 @@ def modify_checkpoint(checkpoint_bilinear, checkpoint_clean):
                 checkpoint_clean[crt_k] = ori_v
         elif 'final_linear' in ori_k:
             crt_k = ori_k
-            if 'weight' in ori_k:
+            if 'weight' in crt_k:
                 _, c_in = ori_v.size()
                 scale = 1 / math.sqrt(c_in)
                 checkpoint_clean[crt_k] = ori_v * scale
@@ -119,17 +119,17 @@ def modify_checkpoint(checkpoint_bilinear, checkpoint_clean):
                 checkpoint_clean[crt_k] = ori_v
         elif 'condition' in ori_k:
             crt_k = ori_k
-            if '0.weight' in ori_k:
+            if '0.weight' in crt_k:
                 c_out, c_in, k1, k2 = ori_v.size()
                 scale = 1 / math.sqrt(c_in * k1 * k2)
                 checkpoint_clean[crt_k] = ori_v * scale * 2**0.5
-            elif '0.bias' in ori_k:
+            elif '0.bias' in crt_k:
                 checkpoint_clean[crt_k] = ori_v * 2**0.5
-            elif '2.weight' in ori_k:
+            elif '2.weight' in crt_k:
                 c_out, c_in, k1, k2 = ori_v.size()
                 scale = 1 / math.sqrt(c_in * k1 * k2)
                 checkpoint_clean[crt_k] = ori_v * scale
-            elif '2.bias' in ori_k:
+            elif '2.bias' in crt_k:
                 checkpoint_clean[crt_k] = ori_v
 
     return checkpoint_clean

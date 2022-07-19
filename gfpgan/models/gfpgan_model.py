@@ -65,10 +65,11 @@ class GFPGANModel(BaseModel):
         self.net_g_ema.eval()
 
         # ----------- facial component networks ----------- #
-        if ('network_d_left_eye' in self.opt and 'network_d_right_eye' in self.opt and 'network_d_mouth' in self.opt):
-            self.use_facial_disc = True
-        else:
-            self.use_facial_disc = False
+        self.use_facial_disc = (
+            'network_d_left_eye' in self.opt
+            and 'network_d_right_eye' in self.opt
+            and 'network_d_mouth' in self.opt
+        )
 
         if self.use_facial_disc:
             # left eye
@@ -120,11 +121,7 @@ class GFPGANModel(BaseModel):
         self.cri_gan = build_loss(train_opt['gan_opt']).to(self.device)
 
         # ----------- define identity loss ----------- #
-        if 'network_identity' in self.opt:
-            self.use_identity = True
-        else:
-            self.use_identity = False
-
+        self.use_identity = 'network_identity' in self.opt
         if self.use_identity:
             # define identity network
             self.network_identity = build_network(self.opt['network_identity'])
@@ -152,9 +149,7 @@ class GFPGANModel(BaseModel):
 
         # ----------- optimizer g ----------- #
         net_g_reg_ratio = 1
-        normal_params = []
-        for _, param in self.net_g.named_parameters():
-            normal_params.append(param)
+        normal_params = [param for _, param in self.net_g.named_parameters()]
         optim_params_g = [{  # add normal params first
             'params': normal_params,
             'lr': train_opt['optim_g']['lr']
@@ -167,9 +162,7 @@ class GFPGANModel(BaseModel):
 
         # ----------- optimizer d ----------- #
         net_d_reg_ratio = self.net_d_reg_every / (self.net_d_reg_every + 1)
-        normal_params = []
-        for _, param in self.net_d.named_parameters():
-            normal_params.append(param)
+        normal_params = [param for _, param in self.net_d.named_parameters()]
         optim_params_d = [{  # add normal params first
             'params': normal_params,
             'lr': train_opt['optim_d']['lr']
@@ -226,7 +219,7 @@ class GFPGANModel(BaseModel):
         """Construct image pyramid for intermediate restoration loss"""
         pyramid_gt = [self.gt]
         down_img = self.gt
-        for _ in range(0, self.log_size - 3):
+        for _ in range(self.log_size - 3):
             down_img = F.interpolate(down_img, scale_factor=0.5, mode='bilinear', align_corners=False)
             pyramid_gt.insert(0, down_img)
         return pyramid_gt
@@ -275,8 +268,7 @@ class GFPGANModel(BaseModel):
         n, c, h, w = x.size()
         features = x.view(n, c, w * h)
         features_t = features.transpose(1, 2)
-        gram = features.bmm(features_t) / (c * h * w)
-        return gram
+        return features.bmm(features_t) / (c * h * w)
 
     def gray_resize_for_identity(self, out, size=128):
         out_gray = (0.2989 * out[:, 0, :, :] + 0.5870 * out[:, 1, :, :] + 0.1140 * out[:, 2, :, :])

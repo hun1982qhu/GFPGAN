@@ -41,12 +41,7 @@ def get_git_hash():
 
 
 def get_hash():
-    if os.path.exists('.git'):
-        sha = get_git_hash()[:7]
-    else:
-        sha = 'unknown'
-
-    return sha
+    return get_git_hash()[:7] if os.path.exists('.git') else 'unknown'
 
 
 def write_version_py():
