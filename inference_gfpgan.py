@@ -94,9 +94,9 @@ def main():
         raise ValueError(f'Wrong model version {args.version}.')
 
     # determine model paths
-    model_path = os.path.join('experiments/pretrained_models', model_name + '.pth')
+    model_path = os.path.join('experiments/pretrained_models', f'{model_name}.pth')
     if not os.path.isfile(model_path):
-        model_path = os.path.join('realesrgan/weights', model_name + '.pth')
+        model_path = os.path.join('realesrgan/weights', f'{model_name}.pth')
     if not os.path.isfile(model_path):
         raise ValueError(f'Model {model_name} does not exist.')
 
@@ -137,11 +137,7 @@ def main():
 
         # save restored img
         if restored_img is not None:
-            if args.ext == 'auto':
-                extension = ext[1:]
-            else:
-                extension = args.ext
-
+            extension = ext[1:] if args.ext == 'auto' else args.ext
             if args.suffix is not None:
                 save_restore_path = os.path.join(args.output, 'restored_imgs', f'{basename}_{args.suffix}.{extension}')
             else:

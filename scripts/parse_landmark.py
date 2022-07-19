@@ -28,6 +28,11 @@ with open(os.path.join(face_path, 'meta_info.txt')) as fin:
 
 save_dict = {}
 
+# get landmarks for each component
+map_left_eye = list(range(36, 42))
+map_right_eye = list(range(42, 48))
+map_mouth = list(range(48, 68))
+
 for item_idx, item in enumerate(json_data.values()):
     print(f'\r{item_idx} / {len(json_data)}, {item["image"]["file_path"]} ', end='', flush=True)
 
@@ -35,21 +40,18 @@ for item_idx, item in enumerate(json_data.values()):
     lm = np.array(item['image']['face_landmarks'])
     lm = lm * scale
 
-    item_dict = {}
     # get image
     if save_img:
         img_bytes = file_client.get(paths[item_idx])
         img = imfrombytes(img_bytes, float32=True)
 
-    # get landmarks for each component
-    map_left_eye = list(range(36, 42))
-    map_right_eye = list(range(42, 48))
-    map_mouth = list(range(48, 68))
-
     # eye_left
     mean_left_eye = np.mean(lm[map_left_eye], 0)  # (x, y)
     half_len_left_eye = np.max((np.max(np.max(lm[map_left_eye], 0) - np.min(lm[map_left_eye], 0)) / 2, 16))
-    item_dict['left_eye'] = [mean_left_eye[0], mean_left_eye[1], half_len_left_eye]
+    item_dict = {
+        'left_eye': [mean_left_eye[0], mean_left_eye[1], half_len_left_eye]
+    }
+
     # mean_left_eye[0] = 512 - mean_left_eye[0]  # for testing flip
     half_len_left_eye *= enlarge_ratio
     loc_left_eye = np.hstack((mean_left_eye - half_len_left_eye + 1, mean_left_eye + half_len_left_eye)).astype(int)
